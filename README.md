@@ -1,0 +1,2 @@
+# SmartInventory
+Smart Inventory System
