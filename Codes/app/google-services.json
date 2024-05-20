@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1077845054263",
+    "project_id": "smartinventory-da577",
+    "storage_bucket": "smartinventory-da577.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1077845054263:android:bdce53e3872584749f00b2",
+        "android_client_info": {
+          "package_name": "com.example.smartinventory"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8dRjGEDP4d-VieA1SiTmbZkrWW-Mcw2c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
