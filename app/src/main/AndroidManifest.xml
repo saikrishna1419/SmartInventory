@@ -12,13 +12,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SmartInventory"
         tools:targetApi="31">
-
-
-
+        <activity
+            android:name=".Signinpage"
+            android:exported="false" />
         <activity
             android:name=".warehouseInterface"
             android:exported="false" />
-
+        <activity
+            android:name=".Inventory"
+            android:exported="false" />
         <activity
             android:name=".WarehouseLogin"
             android:exported="false" />

@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">SmartInventory</string>
+    <string-array name="user_types">
+        <item>Manager</item>
+        <item>Customer</item>
+    </string-array>
 </resources>

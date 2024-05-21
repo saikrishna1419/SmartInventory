@@ -20,8 +20,8 @@ public class warehouseInterface extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // Navigate to the registration page
-                Intent intent = new Intent(warehouseInterface.this, checkIn.class);
-                startActivity(intent);
+                //Intent intent = new Intent(warehouseInterface.this, checkIn.class);
+                //startActivity(intent);
             }
         });
     }
