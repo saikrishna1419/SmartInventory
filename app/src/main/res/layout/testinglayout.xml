@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp">
+
+    <TextView
+        android:id="@+id/appNameTV"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="#EF6F66"
+        android:gravity="start"
+        android:padding="5dp"
+        android:text="Email"
+        android:textColor="#F6F0F0"
+        android:textSize="34sp"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/ToET"
+        android:layout_width="383dp"
+        android:layout_height="60dp"
+        android:hint="to" />
+
+    <EditText
+        android:id="@+id/SubjectET"
+        android:layout_width="379dp"
+        android:layout_height="60dp"
+        android:hint="subject" />
+
+    <EditText
+        android:id="@+id/MessageET"
+        android:layout_width="383dp"
+        android:layout_height="286dp"
+        android:layout_weight="1"
+        android:gravity="top"
+        android:hint="message" />
+
+    <Button
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:text="send" />
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Button" />
+</LinearLayout>
