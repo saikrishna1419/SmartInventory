@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
         passwordET = findViewById(R.id.PasswordPW);
 
         Button loginButton = findViewById(R.id.button);
+        TextView forgotPasswordTextView = findViewById(R.id.forgotPasswordTV);
         TextView newUserTextView = findViewById(R.id.NewUserTV);
 
         // Set OnClickListener for the login button
@@ -62,7 +63,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
+        // Set OnClickListener for the "Forgot Password?" TextView
+        forgotPasswordTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to the forgot password page
+                Intent intent = new Intent(MainActivity.this, ResetPasswordActivity.class);
+                startActivity(intent);
+            }
+        });
 
         // Set OnClickListener for the "New User? SignUp" TextView
         newUserTextView.setOnClickListener(new View.OnClickListener() {
@@ -108,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
                 if (documentSnapshot.exists()) {
                     String userType = documentSnapshot.getString("userType");
                     if (userType != null) {
-                        //navigateToUserInterface(userType);
+                        navigateToUserInterface(userType);
                     } else {
                         Toast.makeText(MainActivity.this, "User type not found.", Toast.LENGTH_SHORT).show();
                     }
@@ -120,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
                             if (documentSnapshot.exists()) {
                                 String userType = documentSnapshot.getString("userType");
                                 if (userType != null) {
+                                    navigateToUserInterface(userType);
                                 } else {
                                     Toast.makeText(MainActivity.this, "User type not found.", Toast.LENGTH_SHORT).show();
                                 }
@@ -143,5 +153,16 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-
+    // Method to navigate to appropriate interface based on user type
+    private void navigateToUserInterface(String userType) {
+        if (userType.equals("Customer")) {
+            Intent intent = new Intent(MainActivity.this, UserInterface.class);
+            startActivity(intent);
+        } else if (userType.equals("Manager")) {
+            Intent intent = new Intent(MainActivity.this, warehouseInterface.class);
+            startActivity(intent);
+        } else {
+            Toast.makeText(MainActivity.this, "Unknown user type.", Toast.LENGTH_SHORT).show();
+        }
+    }
 }
