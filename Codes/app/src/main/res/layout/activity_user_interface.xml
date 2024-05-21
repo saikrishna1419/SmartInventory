@@ -7,23 +7,6 @@
     tools:context=".UserInterface">
 
     <TextView
-        android:id="@+id/TrackingTV"
-        android:layout_width="111dp"
-        android:layout_height="97dp"
-        android:background="#94D697"
-        android:gravity="center"
-        android:text="Shipment Request"
-        android:textColor="#090000"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.213"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.826" />
-
-    <TextView
         android:id="@+id/appNameTV"
         android:layout_width="0dp"
         android:layout_height="60dp"
@@ -42,7 +25,7 @@
         app:layout_constraintVertical_bias="0" />
 
     <TextView
-        android:id="@+id/textView4"
+        android:id="@+id/titleTV"
         android:layout_width="99dp"
         android:layout_height="50dp"
         android:gravity="center"
@@ -75,18 +58,18 @@
         app:layout_constraintVertical_bias="0.328" />
 
     <TextView
-        android:id="@+id/HistoryTV"
+        android:id="@+id/requestTV"
         android:layout_width="111dp"
         android:layout_height="97dp"
         android:background="#94D697"
         android:gravity="center"
-        android:text="History"
+        android:text="Request"
         android:textColor="#090000"
         android:textSize="16sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.76"
+        app:layout_constraintHorizontal_bias="0.713"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.328" />
@@ -109,12 +92,12 @@
         app:layout_constraintVertical_bias="0.578" />
 
     <TextView
-        android:id="@+id/ProfileTV"
+        android:id="@+id/paymentTV"
         android:layout_width="111dp"
         android:layout_height="97dp"
         android:background="#94D697"
         android:gravity="center"
-        android:text="Profile"
+        android:text="Payment"
         android:textColor="#090000"
         android:textSize="16sp"
         android:textStyle="bold"
