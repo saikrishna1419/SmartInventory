@@ -20,8 +20,8 @@ public class UserInterface extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // Navigate to the registration page
-               // Intent intent = new Intent(UserInterface.this, Inventory.class);
-                //startActivity(intent);
+                Intent intent = new Intent(UserInterface.this, Inventory.class);
+                startActivity(intent);
             }
         });
     }

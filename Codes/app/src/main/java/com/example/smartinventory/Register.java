@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
@@ -83,11 +84,22 @@ public class Register extends AppCompatActivity {
         mAuth.createUserWithEmailAndPassword(userName, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        String userId = mAuth.getCurrentUser().getUid();
-                        saveUserToFirestore(userId, userName, contact, userType);
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        if (user != null) {
+                            user.sendEmailVerification().addOnCompleteListener(verificationTask -> {
+                                if (verificationTask.isSuccessful()) {
+                                    Toast.makeText(Register.this, "Verification email sent. Please check your email.", Toast.LENGTH_SHORT).show();
+                                    saveUserToFirestore(user.getUid(), userName, contact, userType);
+                                    mAuth.signOut();
+                                    startActivity(new Intent(Register.this, MainActivity.class));
+                                    finish();
+                                } else {
+                                    Toast.makeText(Register.this, "Failed to send verification email.", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
                     } else {
-                        Toast.makeText(Register.this, "Authentication failed.",
-                                Toast.LENGTH_SHORT).show();
+                        Toast.makeText(Register.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -110,10 +122,6 @@ public class Register extends AppCompatActivity {
                     .set(user)
                     .addOnSuccessListener(aVoid -> {
                         Toast.makeText(Register.this, "User Registered", Toast.LENGTH_SHORT).show();
-                        // Navigate back to MainActivity
-                        Intent intent = new Intent(Register.this, MainActivity.class);
-                        startActivity(intent);
-                        finish(); // Close the Register activity
                     })
                     .addOnFailureListener(e -> {
                         Toast.makeText(Register.this, "Error adding document", Toast.LENGTH_SHORT).show();
