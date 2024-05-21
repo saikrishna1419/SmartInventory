@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- App Name TextView -->
     <TextView
         android:id="@+id/appNameTV"
         android:layout_width="0dp"
@@ -22,8 +23,9 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0" />
 
+    <!-- Inventory Title TextView -->
     <TextView
-        android:id="@+id/textView4"
+        android:id="@+id/titleTV"
         android:layout_width="99dp"
         android:layout_height="50dp"
         android:gravity="center"
@@ -38,14 +40,15 @@
         app:layout_constraintVertical_bias="0.124" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:layout_width="400dp"
-        android:layout_height="511dp"
+        android:id="@+id/recyclerViewRV"
+        android:layout_width="408dp"
+        android:layout_height="579dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textView4" />
+        app:layout_constraintTop_toBottomOf="@id/titleTV" />
 
+    <!-- EditText for searching -->
     <EditText
         android:id="@+id/SearchET"
         android:layout_width="213dp"
