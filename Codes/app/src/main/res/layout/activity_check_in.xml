@@ -4,9 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".checkIn"
-    tools:layout_editor_absoluteX="0dp"
-    tools:layout_editor_absoluteY="3dp">
+    tools:context=".checkIn">
 
     <TextView
         android:id="@+id/appNameTV"
@@ -19,7 +17,7 @@
         android:textColor="#F6F0F0"
         android:textSize="34sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/titleTV"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -34,93 +32,105 @@
         android:textColor="#4CAF50"
         android:textSize="20sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/trackidET"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.153" />
+        app:layout_constraintTop_toTopOf="@id/appNameTV" />
 
     <EditText
         android:id="@+id/trackidET"
-        android:layout_width="330dp"
-        android:layout_height="48dp"
-        android:ems="10"
-        android:hint="Tracking Id"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="16dp"
+        android:hint="Tracking ID"
         android:inputType="text"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:padding="10dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.284" />
+        app:layout_constraintTop_toBottomOf="@id/titleTV" />
 
     <EditText
-        android:id="@+id/upcET"
-        android:layout_width="107dp"
-        android:layout_height="48dp"
-        android:ems="10"
-        android:hint="UPC"
+        android:id="@+id/usernameET"
+        android:layout_width="0dp"
+        android:layout_height="53dp"
+        android:layout_marginTop="16dp"
+        android:hint="Username"
         android:inputType="text"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:padding="10dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.131"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.381" />
+        app:layout_constraintTop_toBottomOf="@id/trackidET" />
+
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/usernameET"
+        app:layout_constraintBottom_toTopOf="@id/dateET">
+
+        <LinearLayout
+            android:id="@+id/productQuantityLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <!-- Rows will be added dynamically here -->
+        </LinearLayout>
+    </ScrollView>
 
     <EditText
-        android:id="@+id/productET"
-        android:layout_width="157dp"
-        android:layout_height="48dp"
-        android:ems="10"
-        android:hint="Product Name"
-        android:inputType="text"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:id="@+id/dateET"
+        android:layout_width="0dp"
+        android:layout_height="58dp"
+        android:layout_marginTop="16dp"
+        android:hint="Date"
+        android:inputType="date"
+        android:padding="10dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.622"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.382" />
+        app:layout_constraintTop_toBottomOf="@id/scrollView" />
 
     <EditText
-        android:id="@+id/quantityET"
-        android:layout_width="46dp"
-        android:layout_height="48dp"
-        android:ems="10"
-        android:hint="Qty"
+        android:id="@+id/additionalET"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="16dp"
+        android:hint="Additional Information (optional)"
         android:inputType="text"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:padding="10dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.898"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.382" />
-
-    <EditText
-        android:id="@+id/noteET"
-        android:layout_width="339dp"
-        android:layout_height="48dp"
-        android:ems="10"
-        android:hint="Note"
-        android:inputType="text"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.555"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.484" />
+        app:layout_constraintTop_toBottomOf="@id/dateET" />
 
     <Button
         android:id="@+id/checkinBTN"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="#2196F3"
+        android:padding="10dp"
         android:text="Check In"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.514"
+        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.622" />
+        app:layout_constraintTop_toBottomOf="@id/additionalET" />
 
+    <Button
+        android:id="@+id/addMoreBTN"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="#FF5722"
+        android:padding="10dp"
+        android:text="Add More"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.501"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/checkinBTN" />
 </androidx.constraintlayout.widget.ConstraintLayout>
