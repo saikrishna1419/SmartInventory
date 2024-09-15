@@ -24,5 +24,16 @@ public class warehouseInterface extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        TextView requestTV = findViewById(R.id.requestTV);
+
+        requestTV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to the registration page
+                Intent intent = new Intent(warehouseInterface.this, Subrequest.class);
+                startActivity(intent);
+            }
+        });
     }
 }
