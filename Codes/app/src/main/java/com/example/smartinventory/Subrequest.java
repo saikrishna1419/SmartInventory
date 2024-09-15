@@ -4,16 +4,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 
-public class checkIn extends AppCompatActivity {
+public class Subrequest extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_check_in);
-        //check in functionality added.
-
-
+        setContentView(R.layout.activity_subrequest);
     }
-
-
 }
