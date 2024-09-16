@@ -108,4 +108,21 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.577" />
 
+    <TextView
+        android:id="@+id/livechatTV"
+        android:layout_width="111dp"
+        android:layout_height="97dp"
+        android:background="#94D697"
+        android:gravity="center"
+        android:text="LiveChat"
+        android:textColor="#090000"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.213"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.839" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
