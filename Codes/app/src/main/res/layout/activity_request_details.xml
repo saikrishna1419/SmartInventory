@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/appNameTV"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="#72B375"
+        android:gravity="start"
+        android:padding="5dp"
+        android:text="Smart Inventory"
+        android:textColor="#F6F0F0"
+        android:textSize="34sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@id/titleTV"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/titleTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Label"
+        android:textColor="#4CAF50"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@id/productNameTV"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/appNameTV" />
+
+    <TextView
+        android:id="@+id/productNameTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:text="Product Name"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@id/quantityET"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/titleTV" />
+
+    <TextView
+        android:id="@+id/upcTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="UPC"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toStartOf="@id/quantityET"
+        app:layout_constraintStart_toEndOf="@id/productNameTV"
+        app:layout_constraintTop_toTopOf="@id/productNameTV"
+        app:layout_constraintBottom_toBottomOf="@id/productNameTV" />
+
+    <EditText
+        android:id="@+id/quantityET"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="Quantity"
+        android:inputType="number"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/upcTV"
+        app:layout_constraintTop_toTopOf="@id/upcTV"
+        app:layout_constraintBottom_toBottomOf="@id/upcTV" />
+
+    <EditText
+        android:id="@+id/labelNumberET"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Label Number"
+        app:layout_constraintBottom_toTopOf="@id/addressET"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/quantityET" />
+
+    <EditText
+        android:id="@+id/addressET"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Address"
+        app:layout_constraintBottom_toTopOf="@id/pincodeET"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/labelNumberET" />
+
+    <EditText
+        android:id="@+id/pincodeET"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Pincode"
+        app:layout_constraintBottom_toTopOf="@id/stateET"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/addressET" />
+
+    <EditText
+        android:id="@+id/stateET"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="State"
+        app:layout_constraintBottom_toTopOf="@id/countryET"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/pincodeET" />
+
+    <EditText
+        android:id="@+id/countryET"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Country"
+        app:layout_constraintBottom_toTopOf="@id/usernameET"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/stateET" />
+
+    <EditText
+        android:id="@+id/usernameET"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Username"
+        app:layout_constraintBottom_toTopOf="@id/sendButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/countryET" />
+
+    <Button
+        android:id="@+id/sendButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Send"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/usernameET" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
