@@ -1,5 +1,4 @@
 package com.example.smartinventory;
-
 public class InventoryItem {
     private String trackId;
     private String upc;
@@ -8,7 +7,7 @@ public class InventoryItem {
     private String date;
     private String note;
 
-    public InventoryItem() {}
+    public InventoryItem() {}  // Default constructor required for Firestore serialization
 
     public InventoryItem(String trackId, String upc, String productName, int quantity, String date, String note) {
         this.trackId = trackId;

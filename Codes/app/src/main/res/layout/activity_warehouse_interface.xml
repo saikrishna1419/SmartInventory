@@ -92,40 +92,6 @@
         app:layout_constraintVertical_bias="0.577" />
 
     <TextView
-        android:id="@+id/settingsTV"
-        android:layout_width="111dp"
-        android:layout_height="97dp"
-        android:background="#94D697"
-        android:gravity="center"
-        android:text="Settings"
-        android:textColor="#090000"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.763"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.577" />
-
-    <TextView
-        android:id="@+id/UsersTV"
-        android:layout_width="111dp"
-        android:layout_height="97dp"
-        android:background="#94D697"
-        android:gravity="center"
-        android:text="Users"
-        android:textColor="#090000"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.253"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.788" />
-
-    <TextView
         android:id="@+id/livechatTV"
         android:layout_width="111dp"
         android:layout_height="97dp"
@@ -140,6 +106,6 @@
         app:layout_constraintHorizontal_bias="0.786"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.788" />
+        app:layout_constraintVertical_bias="0.577" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
