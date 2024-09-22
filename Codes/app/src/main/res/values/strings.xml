@@ -4,4 +4,11 @@
         <item>Manager</item>
         <item>Customer</item>
     </string-array>
+
+    <string-array name="request_status">
+        <item>New</item>
+        <item>Processing</item>
+        <item>Shipped</item>
+        <item>Cancelled</item>
+    </string-array>
 </resources>

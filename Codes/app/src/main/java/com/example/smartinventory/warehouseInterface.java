@@ -16,6 +16,15 @@ public class warehouseInterface extends AppCompatActivity {
 
         TextView checkInTV = findViewById(R.id.checkInTV);
         TextView liveChatTV = findViewById(R.id.livechatTV);
+        TextView requestTV = findViewById(R.id.requestTV);
+
+        requestTV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(warehouseInterface.this, Request.class);
+                startActivity(intent);
+            }
+        });
 
         checkInTV.setOnClickListener(new View.OnClickListener() {
             @Override
