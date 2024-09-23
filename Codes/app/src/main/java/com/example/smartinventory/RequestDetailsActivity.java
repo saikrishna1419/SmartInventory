@@ -83,6 +83,7 @@ public class RequestDetailsActivity extends AppCompatActivity {
             String state = stateET.getText().toString();
             String country = countryET.getText().toString();
 
+
             // Call the method to fetch the product and update quantity
             fetchProductAndUpdateQuantity(labelNumber, address, username, pincode, state, country);
         });
