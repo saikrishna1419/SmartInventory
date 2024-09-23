@@ -1,38 +1,67 @@
 package com.example.smartinventory;
 
+import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Filter;
-import android.widget.Filterable;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import java.util.ArrayList;
+
+import java.util.List;
+// InventoryAdapter.java
+
+import android.content.Context;
+import android.content.Intent;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.List;
 
-public class InventoryAdapter extends RecyclerView.Adapter<InventoryAdapter.ViewHolder> implements Filterable {
+public class InventoryAdapter extends RecyclerView.Adapter<InventoryAdapter.InventoryViewHolder> {
 
     private List<InventoryItem> inventoryList;
-    private List<InventoryItem> inventoryListFull;
+    private Context context;
 
-    public InventoryAdapter(List<InventoryItem> inventoryList) {
+    public InventoryAdapter(List<InventoryItem> inventoryList, Context context) {
         this.inventoryList = inventoryList;
-        this.inventoryListFull = new ArrayList<>(inventoryList);
+        this.context = context;
     }
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public InventoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.activity_inventory_item, parent, false);
-        return new ViewHolder(view);
+        return new InventoryViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull InventoryViewHolder holder, int position) {
         InventoryItem item = inventoryList.get(position);
-        holder.productName.setText(item.getProductName());
-        holder.quantity.setText(String.valueOf(item.getQuantity()));
+        holder.productNameTV.setText(item.getProductName());
+        holder.quantityTV.setText(String.valueOf(item.getQuantity()));
+
+        // Hide UPC TextView
+        holder.upcTV.setVisibility(View.GONE);
+
+        holder.requestButton.setOnClickListener(v -> {
+            Intent intent = new Intent(context, RequestDetailsActivity.class);
+            intent.putExtra("productName", item.getProductName());
+            intent.putExtra("quantity", item.getQuantity());
+            intent.putExtra("upc", item.getUpc()); // Pass UPC to RequestDetailsActivity
+            context.startActivity(intent);
+        });
     }
 
     @Override
@@ -40,44 +69,18 @@ public class InventoryAdapter extends RecyclerView.Adapter<InventoryAdapter.View
         return inventoryList.size();
     }
 
-    @Override
-    public Filter getFilter() {
-        return new Filter() {
-            @Override
-            protected FilterResults performFiltering(CharSequence constraint) {
-                List<InventoryItem> filteredList = new ArrayList<>();
-                if (constraint == null || constraint.length() == 0) {
-                    filteredList.addAll(inventoryListFull);
-                } else {
-                    String filterPattern = constraint.toString().toLowerCase().trim();
-                    for (InventoryItem item : inventoryListFull) {
-                        if (item.getProductName().toLowerCase().contains(filterPattern)) {
-                            filteredList.add(item);
-                        }
-                    }
-                }
-                FilterResults results = new FilterResults();
-                results.values = filteredList;
-                return results;
-            }
+    public static class InventoryViewHolder extends RecyclerView.ViewHolder {
+        TextView productNameTV;
+        TextView quantityTV;
+        TextView upcTV; // This will be hidden
+        Button requestButton;
 
-            @Override
-            protected void publishResults(CharSequence constraint, FilterResults results) {
-                inventoryList.clear();
-                inventoryList.addAll((List<InventoryItem>) results.values);
-                notifyDataSetChanged();
-            }
-        };
-    }
-
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView productName;
-        TextView quantity;
-
-        public ViewHolder(@NonNull View itemView) {
+        public InventoryViewHolder(@NonNull View itemView) {
             super(itemView);
-            productName = itemView.findViewById(R.id.productNameTV);
-            quantity = itemView.findViewById(R.id.quantityTV);
+            productNameTV = itemView.findViewById(R.id.productNameTV);
+            quantityTV = itemView.findViewById(R.id.quantityTV);
+            upcTV = itemView.findViewById(R.id.upcTV);
+            requestButton = itemView.findViewById(R.id.requestButton);
         }
     }
 }
