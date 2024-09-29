@@ -1,70 +1,193 @@
 package com.example.smartinventory;
 
-public class RequestDetails {
-    private String productName;
-    private String upc;
-    private int quantity;
-    private String labelNumber;
-    private String address;
-    private String username;
-    private String pincode;
-    private String state;
-    private String country;
-    private String status;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
 
-    // No-argument constructor required for Firestore
-    public RequestDetails() {
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+public class RequestDetails extends AppCompatActivity {
+
+    private FirebaseFirestore db;
+    private LinearLayout requestContainer;
+    private Spinner statusSpinner;
+    private Button updateStatusButton;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_request_item);
+
+        db = FirebaseFirestore.getInstance();
+        requestContainer = findViewById(R.id.requestContainer);
+
+        // Get the requestId from the Intent
+        String requestId = getIntent().getStringExtra("requestId");
+
+        if (requestId != null) {
+            loadRequestDetails(requestId);
+        } else {
+            Toast.makeText(this, "No request details available", Toast.LENGTH_SHORT).show();
+        }
     }
 
-    public String getStatus() {
-        return status;
+    private void loadRequestDetails(String requestId) {
+        db.collection("requests").document(requestId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        // Extract request details
+                        String productName = documentSnapshot.getString("productName");
+                        String quantityStr = documentSnapshot.getString("quantity");
+                        String username = documentSnapshot.getString("username");
+                        String address = documentSnapshot.getString("address");
+                        String country = documentSnapshot.getString("country");
+                        String labelNumber = documentSnapshot.getString("labelNumber");
+                        String pincode = documentSnapshot.getString("pincode");
+                        String state = documentSnapshot.getString("state");
+                        String upc = documentSnapshot.getString("upc");
+                        String currentStatus = documentSnapshot.getString("status");
+
+                        // Inflate the request_item.xml layout and populate the details
+                        inflateRequestDetailsLayout(productName, quantityStr, username, address, country,
+                                labelNumber, pincode, state, upc, currentStatus, requestId);
+                    } else {
+                        Log.e("RequestDetails", "No request found for ID: " + requestId);
+                    }
+                })
+                .addOnFailureListener(e -> Log.e("RequestDetails", "Error loading request details: ", e));
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    private void inflateRequestDetailsLayout(String productName, String quantityStr, String username, String address,
+                                             String country, String labelNumber, String pincode, String state,
+                                             String upc, String currentStatus, String requestId) {
+        // Inflate the request_item.xml layout
+        View requestView = LayoutInflater.from(this).inflate(R.layout.request_item, requestContainer, false);
+
+        // Find and set the request details TextView
+        TextView requestDetailsTV = requestView.findViewById(R.id.requestDetailsTV);
+        requestDetailsTV.setText("Label Number: " + labelNumber +
+                "\nProduct: " + productName + "\nUPC: " + upc +
+                "\nQuantity: " + quantityStr + "\nUsername: " + username +
+                "\nAddress: " + address + "\nState: " + state +
+                "\nCountry: " + country + "\nPincode: " + pincode);
+
+        // Find the Spinner and Button from request_item.xml
+        statusSpinner = requestView.findViewById(R.id.statusSpinner);
+        updateStatusButton = requestView.findViewById(R.id.updateStatusButton);
+
+        // Set up the Spinner with status options
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.request_status_array, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        statusSpinner.setAdapter(adapter);
+
+        // Set the current status in the Spinner
+        setStatusInSpinner(currentStatus);
+
+        // Handle the update status button click
+        updateStatusButton.setOnClickListener(v -> {
+            String selectedStatus = statusSpinner.getSelectedItem().toString();
+            updateRequestStatus(requestId, selectedStatus, quantityStr);
+        });
+
+        // Add the view to the request container
+        requestContainer.addView(requestView);
     }
 
-    public RequestDetails(String productName, String upc, int quantity, String labelNumber,
-                          String address, String username, String pincode, String state, String country, String status) {
-        this.productName = productName;
-        this.upc = upc;
-        this.quantity = quantity;
-        this.labelNumber = labelNumber;
-        this.address = address;
-        this.username = username;
-        this.pincode = pincode;
-        this.state = state;
-        this.country = country;
-        this.status = status;
-
+    // Helper method to preselect the current status in the Spinner
+    private void setStatusInSpinner(String currentStatus) {
+        ArrayAdapter<CharSequence> adapter = (ArrayAdapter<CharSequence>) statusSpinner.getAdapter();
+        if (currentStatus != null) {
+            int spinnerPosition = adapter.getPosition(currentStatus);
+            statusSpinner.setSelection(spinnerPosition);
+        }
     }
 
-    // Getters and setters
-    public String getProductName() { return productName; }
-    public void setProductName(String productName) { this.productName = productName; }
+    private void updateRequestStatus(String requestId, String newStatus, String quantityStr) {
+        db.collection("requests").document(requestId)
+                .update("status", newStatus)
+                .addOnSuccessListener(aVoid -> {
+                    if (newStatus.equals("Processing")) {
+                        // Get the product name for comparison
+                        db.collection("requests").document(requestId)
+                                .get()
+                                .addOnSuccessListener(documentSnapshot -> {
+                                    if (documentSnapshot.exists()) {
+                                        String productName = documentSnapshot.getString("productName");
 
-    public String getUpc() { return upc; }
-    public void setUpc(String upc) { this.upc = upc; }
+                                        // Pass both productName and quantityStr to updateInventory
+                                        updateInventory(productName, quantityStr);
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(RequestDetails.this, "Failed to fetch product name", Toast.LENGTH_SHORT).show();
+                                });
+                    }
+                    Toast.makeText(RequestDetails.this, "Status updated successfully", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(RequestDetails.this, "Failed to update status", Toast.LENGTH_SHORT).show();
+                    Log.e("RequestDetails", "Error updating request status: ", e);
+                });
+    }
 
-    public int getQuantity() { return quantity; }
-    public void setQuantity(int quantity) { this.quantity = quantity; }
+    private void updateInventory(String productNameFromRequest, String quantityStr) {
+        db.collection("users").document("saikrishna11.bathula@gmail.com")
+                .collection("inventory").document("T1234").collection("items")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    boolean productFound = false;
 
-    public String getLabelNumber() { return labelNumber; }
-    public void setLabelNumber(String labelNumber) { this.labelNumber = labelNumber; }
+                    for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
+                        String productNameInInventory = documentSnapshot.getString("productName");
 
-    public String getAddress() { return address; }
-    public void setAddress(String address) { this.address = address; }
+                        if (productNameInInventory != null && productNameInInventory.equals(productNameFromRequest)) {
+                            productFound = true;
 
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
+                            // Get the current quantity from the inventory
+                            String quantityStrInInventory = documentSnapshot.getString("quantity"); // e.g., "30(-9)"
+                            String[] parts = quantityStrInInventory.split("\\(");
+                            int currentQuantity = Integer.parseInt(parts[0]); // Get the original quantity
 
-    public String getPincode() { return pincode; }
-    public void setPincode(String pincode) { this.pincode = pincode; }
+                            // Calculate the new quantity using the quantity from updateRequestStatus
+                            int requestQuantity = Integer.parseInt(quantityStr); // Quantity from the request
+                            int newQuantity = currentQuantity - requestQuantity; // Subtract request quantity
 
-    public String getState() { return state; }
-    public void setState(String state) { this.state = state; }
+                            // Construct the new quantity string
+                            String newQuantityStr = newQuantity + ""; // Assuming you want to set the last entered quantity to 0
 
-    public String getCountry() { return country; }
-    public void setCountry(String country) { this.country = country; }
+                            // Update the quantity for the matched product
+                            documentSnapshot.getReference().update("quantity", newQuantityStr)
+                                    .addOnSuccessListener(aVoid -> {
+                                        Toast.makeText(RequestDetails.this, "Inventory updated successfully", Toast.LENGTH_SHORT).show();
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Toast.makeText(RequestDetails.this, "Failed to update inventory", Toast.LENGTH_SHORT).show();
+                                        Log.e("RequestDetails", "Error updating inventory: ", e);
+                                    });
+                            break; // Exit loop once the product is found and updated
+                        }
+                    }
+
+                    if (!productFound) {
+                        Log.e("RequestDetails", "Product not found in inventory for the name: " + productNameFromRequest);
+                        Toast.makeText(RequestDetails.this, "Product not found in inventory", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(RequestDetails.this, "Failed to fetch inventory", Toast.LENGTH_SHORT).show();
+                    Log.e("RequestDetails", "Error fetching inventory: ", e);
+                });
+    }
+
 }
-
