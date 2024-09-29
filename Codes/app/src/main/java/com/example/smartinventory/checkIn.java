@@ -92,16 +92,8 @@ public class checkIn extends AppCompatActivity {
                 continue; // Skip empty rows
             }
 
-            int quantity;
-            try {
-                quantity = Integer.parseInt(quantityStr);
-            } catch (NumberFormatException e) {
-                Toast.makeText(this, "Invalid quantity", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // Create InventoryItem object
-            InventoryItem item = new InventoryItem(trackingId, upc, productName, quantity, date, null);
+            // Create InventoryItem object with quantity as String
+            InventoryItem item = new InventoryItem(trackingId, upc, productName, quantityStr, date, null);
 
             // Create a reference to the document in the `items` subcollection under the `trackingID` document
             DocumentReference itemRef = db.collection("users").document(username)
@@ -117,5 +109,4 @@ public class checkIn extends AppCompatActivity {
                 .addOnSuccessListener(aVoid -> Toast.makeText(checkIn.this, "Check-in successful", Toast.LENGTH_SHORT).show())
                 .addOnFailureListener(e -> Toast.makeText(checkIn.this, "Error saving data", Toast.LENGTH_SHORT).show());
     }
-
 }
