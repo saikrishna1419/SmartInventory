@@ -1,138 +1,233 @@
 package com.example.smartinventory;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfReader;
+import com.itextpdf.kernel.pdf.canvas.parser.PdfTextExtractor;
+import com.itextpdf.kernel.pdf.canvas.parser.listener.SimpleTextExtractionStrategy;
+
+import java.io.InputStream;
 
 public class RequestDetailsActivity extends AppCompatActivity {
 
-    private EditText quantityET;
-    private EditText labelNumberET;
-    private EditText addressET;
-    private EditText usernameET;
-    private EditText pincodeET;
-    private EditText stateET;
-    private EditText countryET;
-    private Button sendButton;
+    private static final int PICK_PDF_REQUEST = 1;
+    private Uri pdfUri;
+    private TextView usernameET;
+    private TextView productNameTv;
+    private TextView upcTv;
+    private TextView quantityET; // Added quantityET
+    private TextView labelNumberET; // Added labelNumberET
+    private TextView addressET; // Added addressET
+    private TextView pincodeET; // Added pincodeET
+    private TextView stateET; // Added stateET
+    private TextView countryET; // Added countryET
+    private Button uploadButton;
+    private Button sendRequestButton;
+    private FirebaseFirestore db; // Firestore instance
+    private FirebaseAuth auth; // Firebase Authentication instance
 
-    private FirebaseFirestore db;
-    private String productName;
-    private String upc;
-    private int quantity;
-    private String username;
-    private String trackingId = "T1234"; // Hardcoded tracking ID for now
-    private static final String TAG = "RequestDetailsActivity";
+    private ActivityResultLauncher<Intent> pdfLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_request_details);
 
-        // Initialize Firebase Firestore and Auth
+        // Initialize Firestore and FirebaseAuth
         db = FirebaseFirestore.getInstance();
-        FirebaseAuth auth = FirebaseAuth.getInstance();
+        auth = FirebaseAuth.getInstance();
 
-        // Get logged-in user's email as username (you can modify to use username if stored separately)
-        FirebaseUser currentUser = auth.getCurrentUser();
-        if (currentUser != null) {
-            username = currentUser.getEmail(); // Or getDisplayName() if you store the username separately
-        } else {
-            Log.e(TAG, "No logged-in user.");
-            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
-            return; // Prevent further execution if no user is logged in
-        }
-
-        // Initialize views
-        quantityET = findViewById(R.id.quantityET);
-        labelNumberET = findViewById(R.id.labelNumberET);
-        addressET = findViewById(R.id.addressET);
+        // Initialize your views
         usernameET = findViewById(R.id.usernameET);
-        pincodeET = findViewById(R.id.pincodeET);
-        stateET = findViewById(R.id.stateET);
-        countryET = findViewById(R.id.countryET);
-        sendButton = findViewById(R.id.sendButton);
+        productNameTv = findViewById(R.id.productNameTV);
+        upcTv = findViewById(R.id.upcTV);
+        quantityET = findViewById(R.id.quantityET); // Initialize quantityET
+        labelNumberET = findViewById(R.id.labelNumberET); // Initialize labelNumberET
+        addressET = findViewById(R.id.addressET); // Initialize addressET
+        pincodeET = findViewById(R.id.pincodeET); // Initialize pincodeET
+        stateET = findViewById(R.id.stateET); // Initialize stateET
+        countryET = findViewById(R.id.countryET); // Initialize countryET
+        uploadButton = findViewById(R.id.uploadPdfButton);
+        sendRequestButton = findViewById(R.id.sendButton);
 
         // Get product details from Intent
-        productName = getIntent().getStringExtra("productName");
-        upc = getIntent().getStringExtra("upc");
-        quantity = getIntent().getIntExtra("quantity", 0);
+        String productName = getIntent().getStringExtra("productName");
+        String upc = getIntent().getStringExtra("upc");
+        String quantity = String.valueOf(getIntent().getIntExtra("quantity", 0));
 
         // Set product details to the UI
-        TextView productNameTV = findViewById(R.id.productNameTV);
-        TextView upcTV = findViewById(R.id.upcTV);
-
-        productNameTV.setText(productName);
-        upcTV.setText(upc);
+        productNameTv.setText(productName);
+        upcTv.setText(upc);
         quantityET.setText(String.valueOf(quantity));
 
-        // Handle send button click
-        sendButton.setOnClickListener(v -> {
-            String labelNumber = labelNumberET.getText().toString();
-            String address = addressET.getText().toString();
-            String pincode = pincodeET.getText().toString();
-            String state = stateET.getText().toString();
-            String country = countryET.getText().toString();
+        // Setup the PDF upload launcher
+        pdfLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK) {
+                        Uri uri = result.getData().getData();
+                        if (uri != null) {
+                            extractDataFromPDF(uri);
+                        }
+                    }
+                });
 
-
-            // Call the method to fetch the product and update quantity
-            fetchProductAndUpdateQuantity(labelNumber, address, username, pincode, state, country);
+        // Set upload button click listener
+        uploadButton.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("application/pdf");
+            pdfLauncher.launch(intent);
         });
+
+        sendRequestButton.setOnClickListener(view -> saveRequestData());
     }
 
-    // Method to fetch product and update its quantity in Firestore
-    private void fetchProductAndUpdateQuantity(String labelNumber, String address, String username, String pincode, String state, String country) {
-        if (username == null || trackingId == null) {
-            Log.e(TAG, "Username or tracking ID is null");
-            Toast.makeText(this, "Error: Username or tracking ID is null", Toast.LENGTH_SHORT).show();
-            return;
+    // Method to extract data from PDF
+    private void extractDataFromPDF(Uri uri) {
+        try {
+            InputStream inputStream = getContentResolver().openInputStream(uri);
+            if (inputStream != null) {
+                PdfReader pdfReader = new PdfReader(inputStream);
+                PdfDocument pdfDocument = new PdfDocument(pdfReader);
+                StringBuilder pdfText = new StringBuilder();
+
+                // Extract text from each page of the PDF
+                for (int i = 1; i <= pdfDocument.getNumberOfPages(); i++) {
+                    SimpleTextExtractionStrategy strategy = new SimpleTextExtractionStrategy();
+                    String pageText = PdfTextExtractor.getTextFromPage(pdfDocument.getPage(i), strategy);
+                    pdfText.append(pageText);
+                }
+
+                pdfDocument.close(); // Close the document after extraction
+
+                String extractedText = pdfText.toString();
+                Log.d("Extracted PDF Text", extractedText); // Log the extracted text for debugging
+
+                // Parse the extracted text
+                String[] lines = extractedText.split("\n");
+                String username = "", productName = "", upc = "", labelNumber = "", address = "", pincode = "", state = "", country = "";
+                for (String line : lines) {
+                    if (line.startsWith("Product Name:")) {
+                        productName = line.substring("Product Name:".length()).trim();
+                    } else if (line.startsWith("UPC:")) {
+                        upc = line.substring("UPC:".length()).trim();
+                    } else if (line.startsWith("Quantity:")) {
+                        String quantityStr = line.substring("Quantity:".length()).trim();
+                        quantityET.setText(quantityStr); // Set the quantity in quantityET
+                    } else if (line.startsWith("Username:")) {
+                        username = line.substring("Username:".length()).trim();
+                    } else if (line.startsWith("labelNumber:")) {
+                        labelNumber = line.substring("labelNumber:".length()).trim();
+                    } else if (line.startsWith("Address:")) {
+                        address = line.substring("Address:".length()).trim();
+                    } else if (line.startsWith("Pincode:")) {
+                        pincode = line.substring("Pincode:".length()).trim();
+                    } else if (line.startsWith("State:")) {
+                        state = line.substring("State:".length()).trim();
+                    } else if (line.startsWith("Country:")) {
+                        country = line.substring("Country:".length()).trim();
+                    }
+                }
+
+                // Set the extracted values to the respective fields
+                usernameET.setText(username);
+                productNameTv.setText(productName);
+                upcTv.setText(upc);
+                labelNumberET.setText(labelNumber);
+                addressET.setText(address);
+                pincodeET.setText(pincode);
+                stateET.setText(state);
+                countryET.setText(country);
+            }
+        } catch (Exception e) {
+            Log.e("PDF Error", "Error reading PDF file", e);
+            Toast.makeText(this, "Error reading PDF file: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // Method to handle submission logic
+    private void saveRequestData() {
+        String productName = productNameTv.getText().toString().trim();
+        String upc = upcTv.getText().toString().trim();
+        String quantityStr = quantityET.getText().toString().trim();
+        String labelNumber = labelNumberET.getText().toString().trim();
+        String address = addressET.getText().toString().trim();
+        String pincode = pincodeET.getText().toString().trim();
+        String state = stateET.getText().toString().trim();
+        String country = countryET.getText().toString().trim();
+
+        // Fetch the logged-in user's email
+        FirebaseUser currentUser = auth.getCurrentUser();
+        String username = currentUser != null ? currentUser.getEmail() : null;
+
+        // Validate inputs
+        if (productName.isEmpty() || upc.isEmpty() || quantityStr.isEmpty() || username == null ||
+                labelNumber.isEmpty() || address.isEmpty() || pincode.isEmpty() || state.isEmpty() || country.isEmpty()) {
+            Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
+            return; // Prevent submission if fields are empty
         }
 
-        db.collection("users")
-                .document(username)
-                .collection("inventory")
-                .document(trackingId)
-                .collection("items")
-                .whereEqualTo("productName", productName)
-                .get()
+        // Construct the correct path to the inventory
+        String inventoryPath = String.format("/users/%s/inventory/T1234/items", username);
+        Log.d("Inventory Path", inventoryPath);
+
+        // Check the inventory quantity from Firestore
+        db.collection(inventoryPath).get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        QuerySnapshot querySnapshot = task.getResult();
-                        if (!querySnapshot.isEmpty()) {
-                            // Update quantity logic
-                            querySnapshot.getDocuments().get(0).getReference().update("quantity", quantity - Integer.parseInt(quantityET.getText().toString()))
-                                    .addOnSuccessListener(aVoid -> {
-                                        // Save Request Details
-                                        saveRequestDetailsToFirestore(labelNumber, address, username, pincode, state, country);
-                                        Toast.makeText(RequestDetailsActivity.this, "Quantity updated and request saved", Toast.LENGTH_SHORT).show();
-                                    })
-                                    .addOnFailureListener(e -> Log.e(TAG, "Error updating quantity: ", e));
-                        } else {
-                            Log.d(TAG, "No product found with the given name.");
-                            Toast.makeText(RequestDetailsActivity.this, "Product not found in Firestore.", Toast.LENGTH_SHORT).show();
+                        if (task.getResult().isEmpty()) {
+                            Toast.makeText(this, "No products found in inventory", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        boolean productFound = false;
+                        for (DocumentSnapshot document : task.getResult()) {
+                            String inventoryProductName = document.getString("productName");
+                            String inventoryUPC = document.getString("upc");
+                            Log.d("Inventory Data", "Checking Product: " + inventoryProductName + ", UPC: " + inventoryUPC);
+
+                            if (inventoryProductName.equals(productName) && inventoryUPC.equals(upc)) {
+                                productFound = true;
+
+                                // Update the request collection with the data, including the "status" field
+                                db.collection("requests").add(new RequestItem(productName, upc, quantityStr, username, labelNumber, address, pincode, state, country, "New"))
+                                        .addOnSuccessListener(aVoid -> {
+                                            Toast.makeText(this, "Request submitted successfully", Toast.LENGTH_SHORT).show();
+
+                                            // Update the inventory quantity
+                                            String currentQuantity = document.getString("quantity");
+                                            String updatedQuantity = currentQuantity + "(-" + quantityStr + ")";
+                                            document.getReference().update("quantity", updatedQuantity)
+                                                    .addOnSuccessListener(aVoid1 -> Log.d("Inventory Update", "Inventory quantity updated successfully"))
+                                                    .addOnFailureListener(e -> Log.e("Inventory Update", "Error updating inventory quantity", e));
+                                        })
+                                        .addOnFailureListener(e -> Log.e("Request Error", "Error submitting request", e));
+                            }
+                        }
+                        if (!productFound) {
+                            Toast.makeText(this, "Product not found in inventory", Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        Log.d(TAG, "Error getting documents: ", task.getException());
+                        Log.e("Firestore", "Error getting documents: ", task.getException());
                     }
                 });
     }
 
-    // Method to save request details to Firestore
-    private void saveRequestDetailsToFirestore(String labelNumber, String address, String username, String pincode, String state, String country) {
-        String status = "New";  // Default status
-        RequestDetails requestDetails = new RequestDetails(productName, upc, Integer.parseInt(quantityET.getText().toString()), labelNumber, address, username, pincode, state, country, status);
-        db.collection("requests")
-                .add(requestDetails)
-                .addOnSuccessListener(aVoid -> Log.d(TAG, "Request details saved successfully"))
-                .addOnFailureListener(e -> Log.e(TAG, "Error saving request details: ", e));
-    }
 }
