@@ -56,7 +56,7 @@ public class InventoryAdapter extends RecyclerView.Adapter<InventoryAdapter.Inve
         holder.upcTV.setVisibility(View.GONE);
 
         holder.requestButton.setOnClickListener(v -> {
-            Intent intent = new Intent(context, RequestDetailsActivity.class);
+            Intent intent = new Intent(context,RequestDetailsActivity.class);
             intent.putExtra("productName", item.getProductName());
             intent.putExtra("quantity", item.getQuantity());
             intent.putExtra("upc", item.getUpc()); // Pass UPC to RequestDetailsActivity

@@ -3,13 +3,13 @@ public class InventoryItem {
     private String trackId;
     private String upc;
     private String productName;
-    private int quantity;
+    private String quantity;
     private String date;
     private String note;
 
     public InventoryItem() {}  // Default constructor required for Firestore serialization
 
-    public InventoryItem(String trackId, String upc, String productName, int quantity, String date, String note) {
+    public InventoryItem(String trackId, String upc, String productName, String quantity, String date, String note) {
         this.trackId = trackId;
         this.upc = upc;
         this.productName = productName;
@@ -42,11 +42,11 @@ public class InventoryItem {
         this.productName = productName;
     }
 
-    public int getQuantity() {
+    public String getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(int quantity) {
+    public void setQuantity(String quantity) {
         this.quantity = quantity;
     }
 
