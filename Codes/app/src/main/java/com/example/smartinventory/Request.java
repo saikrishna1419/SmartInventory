@@ -16,7 +16,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Request extends AppCompatActivity {
 
@@ -120,8 +124,11 @@ public class Request extends AppCompatActivity {
         db.collection("requests").document(requestId)
                 .update("status", newStatus)
                 .addOnSuccessListener(aVoid -> {
-                    if (newStatus.equals("Processing")) {
+                    // Add the new status to history
+                    addStatusToHistory(requestId, newStatus);
+                    if (newStatus.equals("Processing") || newStatus.equals("Shipped")) {
                         updateInventory(productName, quantity); // Pass quantity for the update
+
                     }
                     Toast.makeText(Request.this, "Status updated successfully", Toast.LENGTH_SHORT).show();
                     loadAllRequests();  // Reload requests without recreating the activity
@@ -132,10 +139,43 @@ public class Request extends AppCompatActivity {
                 });
     }
 
+    private void addStatusToHistory(String requestId, String newStatus) {
+        // First, set the server timestamp in the document
+        db.collection("requests").document(requestId)
+                .update("timestamp", FieldValue.serverTimestamp())
+                .addOnSuccessListener(aVoid -> {
+                    // After setting the timestamp, retrieve it
+                    db.collection("requests").document(requestId).get()
+                            .addOnSuccessListener(documentSnapshot -> {
+                                if (documentSnapshot.exists()) {
+                                    // Get the updated timestamp
+                                    Object timestamp = documentSnapshot.get("timestamp");
+
+                                    // Create a map for the history entry
+                                    Map<String, Object> historyEntry = new HashMap<>();
+                                    historyEntry.put("status", newStatus);
+                                    historyEntry.put("timestamp", timestamp);
+
+                                    // Add the history entry to the statusHistory field
+                                    db.collection("requests").document(requestId)
+                                            .update("statusHistory", FieldValue.arrayUnion(historyEntry))
+                                            .addOnSuccessListener(aVoid1 -> {
+                                                Log.d("RequestDetails", "Status history updated successfully.");
+                                            })
+                                            .addOnFailureListener(e -> {
+                                                Log.e("RequestDetails", "Error updating status history: ", e);
+                                            });
+                                }
+                            })
+                            .addOnFailureListener(e -> Log.e("RequestDetails", "Error retrieving timestamp: ", e));
+                })
+                .addOnFailureListener(e -> Log.e("RequestDetails", "Error setting server timestamp: ", e));
+    }
+
     private void updateInventory(String productNameFromRequest, String requestQuantity) {
         Log.d("UpdateInventory", "Request quantity to deduct: " + requestQuantity);
 
-        db.collection("users").document("saikrishna11.bathula@gmail.com")
+        db.collection("users").document("saikrishna")
                 .collection("inventory").document("T1234").collection("items")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
