@@ -1,8 +1,8 @@
-# SMART INVENTORY Project
+# SMART INVENTORY PROJECT
 
 ## Overview
 
-The **SMART INVENTORY Project** is a mobile application designed to streamline warehouse management by offering real-time visibility into inventory levels, efficient communication between users and warehouse managers, and automated processes for managing stock and order fulfillment. Warehouse managers can easily check in items, track stock levels, and respond to user requests. The application also allows users to search for products, receive low stock alerts, and communicate through real-time messaging, making inventory management more efficient and reducing the chances of errors.
+The **SMART INVENTORY PROJECT** is a mobile application designed to streamline warehouse management by offering real-time visibility into inventory levels, efficient communication between users and warehouse managers, and automated processes for managing stock and order fulfillment. Warehouse managers can easily check in items, track stock levels, and respond to user requests. The application also allows users to search for products, receive low stock alerts, and communicate through real-time messaging, making inventory management more efficient and reducing the chances of errors.
 
 By leveraging Firebase for real-time data synchronization, user authentication, and storage, the SMART INVENTORY Project ensures a reliable and scalable solution. Its user-friendly interface and mobile accessibility make it an ideal tool for businesses seeking to optimize their warehouse operations. With key features like filtered search, request tracking, and inventory history, the application provides a comprehensive solution to improve the efficiency of day-to-day warehouse management without the complexity of traditional systems.
 
