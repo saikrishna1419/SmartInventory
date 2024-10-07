@@ -89,38 +89,72 @@ public class Inventory extends AppCompatActivity {
             return;
         }
 
-        String username = user.getEmail();
-        Log.d(TAG, "Fetching items for user: " + username);
+        // Fetch user's email to get the associated username
+        String userEmail = user.getEmail();
+        Log.d(TAG, "Authenticated user email: " + userEmail);
 
-        // Hard-code the tracking ID
-        String trackingId = "T1234";
-        Log.d(TAG, "Fetching items for tracking ID: " + trackingId);
+        // Fetch the userName based on the email from the "customers" collection
+        db.collection("customers")
+                .whereEqualTo("email", userEmail)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && !task.getResult().isEmpty()) {
+                        // Assuming there's only one match for the user's email
+                        String username = task.getResult().getDocuments().get(0).getString("userName");
+                        Log.d(TAG, "Fetched userName: " + username);
 
-        // Construct path
+                        // Now fetch inventory based on the username
+                        fetchInventoryByUserName(username);
+                    } else {
+                        Log.e(TAG, "User not found in customers collection");
+                        Toast.makeText(Inventory.this, "User not found", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void fetchInventoryByUserName(String username) {
+        String trackingId = "T1234"; // Hard-coded tracking ID
+
+        // Construct path to the inventory
         CollectionReference itemsRef = db.collection("users").document(username)
                 .collection("inventory").document(trackingId).collection("items");
 
-        itemsRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
-                    allItemsList.clear();  // Clear previous data if any
-                    inventoryList.clear();  // Clear current data displayed
-                    for (QueryDocumentSnapshot document : task.getResult()) {
-                        InventoryItem item = document.toObject(InventoryItem.class);
-                        allItemsList.add(item);  // Add item to all items list
-                        inventoryList.add(item);  // Add item to display list
-                        Log.d(TAG, "Fetched Item: " + item.getProductName() + ", Quantity: " + item.getQuantity());
+        itemsRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                allItemsList.clear();
+                inventoryList.clear();
+                boolean lowQuantityFound = false; // Flag to track low quantity items
+                for (QueryDocumentSnapshot document : task.getResult()) {
+                    InventoryItem item = document.toObject(InventoryItem.class);
+                    allItemsList.add(item);
+                    inventoryList.add(item);
+                    Log.d(TAG, "Fetched Item: " + item.getProductName() + ", Quantity: " + item.getQuantity());
+
+                    // Convert the quantity to an integer
+                    try {
+                        int quantity = Integer.parseInt(item.getQuantity()); // Assuming item.getQuantity() returns a String
+                        // Check if the quantity is less than 5
+                        if (quantity < 5) {
+                            lowQuantityFound = true;
+                        }
+                    } catch (NumberFormatException e) {
+                        Log.e(TAG, "Error parsing quantity for item: " + item.getProductName(), e);
+                        Toast.makeText(Inventory.this, "Invalid quantity for item: " + item.getProductName(), Toast.LENGTH_SHORT).show();
                     }
-                    inventoryAdapter.notifyDataSetChanged();  // Refresh RecyclerView
-                    Log.d(TAG, "Items fetch successful for tracking ID: " + trackingId);
-                } else {
-                    Log.e(TAG, "Error fetching items for tracking ID: " + trackingId, task.getException());
-                    Toast.makeText(Inventory.this, "Error fetching items for tracking ID: " + trackingId, Toast.LENGTH_SHORT).show();
                 }
+                inventoryAdapter.notifyDataSetChanged(); // Refresh RecyclerView
+
+                // Show notification if low quantity found
+                if (lowQuantityFound) {
+                    Toast.makeText(Inventory.this, "Some items have low quantity (less than 5)", Toast.LENGTH_LONG).show();
+                }
+            } else {
+                Log.e(TAG, "Error fetching items", task.getException());
+                Toast.makeText(Inventory.this, "Error fetching inventory", Toast.LENGTH_SHORT).show();
             }
         });
     }
+
 
     private void filterItems(String query) {
         inventoryList.clear();
@@ -128,13 +162,17 @@ public class Inventory extends AppCompatActivity {
             // Show all items if search query is empty
             inventoryList.addAll(allItemsList);
         } else {
-            // Filter items based on the query
+            // Filter items based on the query for both product name and UPC
             for (InventoryItem item : allItemsList) {
-                if (item.getProductName().toLowerCase().contains(query.toLowerCase())) {
+                String productName = item.getProductName().toLowerCase();
+                String upc = item.getUpc().toLowerCase(); // Assuming getUpc() returns UPC as a String
+
+                if (productName.contains(query.toLowerCase()) || upc.contains(query.toLowerCase())) {
                     inventoryList.add(item);
                 }
             }
         }
         inventoryAdapter.notifyDataSetChanged();  // Refresh RecyclerView
     }
+
 }

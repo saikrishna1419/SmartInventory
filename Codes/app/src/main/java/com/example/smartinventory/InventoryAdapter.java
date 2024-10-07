@@ -51,9 +51,8 @@ public class InventoryAdapter extends RecyclerView.Adapter<InventoryAdapter.Inve
         InventoryItem item = inventoryList.get(position);
         holder.productNameTV.setText(item.getProductName());
         holder.quantityTV.setText(String.valueOf(item.getQuantity()));
-
         // Hide UPC TextView
-        holder.upcTV.setVisibility(View.GONE);
+        holder.upcTV.setText(item.getUpc());
 
         holder.requestButton.setOnClickListener(v -> {
             Intent intent = new Intent(context,RequestDetailsActivity.class);
