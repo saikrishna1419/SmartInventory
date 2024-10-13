@@ -1,5 +1,12 @@
 package com.example.smartinventory;
 
+import com.google.firebase.Timestamp;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class RequestItem {
     private String productName;
     private String upc;
@@ -10,11 +17,15 @@ public class RequestItem {
     private String pincode;
     private String state;
     private String country;
-    private String status; // New field for status
+    private String status;  // Current status of the request
+    private String pdfUrl;  // PDF download URL
+    private Timestamp timestamp;  // Timestamp for when the request is submitted
+    private List<Map<String, Object>> statusHistory;  // List to hold status changes
 
+    // Constructor
     public RequestItem(String productName, String upc, String quantity, String username,
                        String labelNumber, String address, String pincode, String state,
-                       String country, String status) {
+                       String country, String pdfUrl, String status, Timestamp timestamp) {
         this.productName = productName;
         this.upc = upc;
         this.quantity = quantity;
@@ -24,7 +35,11 @@ public class RequestItem {
         this.pincode = pincode;
         this.state = state;
         this.country = country;
-        this.status = status; // Initialize status
+        this.pdfUrl = pdfUrl;
+        this.status = status;
+        this.timestamp = timestamp;
+        this.statusHistory = new ArrayList<>();  // Initialize status history
+        addStatusToHistory(status, timestamp);  // Add initial status to history
     }
 
     public String getProductName() {
@@ -106,4 +121,39 @@ public class RequestItem {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    public String getPdfUrl() {
+        return pdfUrl;
+    }
+
+    public void setPdfUrl(String pdfUrl) {
+        this.pdfUrl = pdfUrl;
+    }
+
+    public Timestamp getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Timestamp timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public List<Map<String, Object>> getStatusHistory() {
+        return statusHistory;
+    }
+
+    public void setStatusHistory(List<Map<String, Object>> statusHistory) {
+        this.statusHistory = statusHistory;
+    }
+
+    // Method to add status to history
+    public void addStatusToHistory(String status, Timestamp timestamp) {
+        Map<String, Object> statusEntry = new HashMap<>();
+        statusEntry.put("status", status);
+        statusEntry.put("timestamp", timestamp);
+        this.statusHistory.add(statusEntry);
+    }
+
+    // Getters and setters for all fields
+    // ...
 }
