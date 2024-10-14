@@ -31,6 +31,7 @@ public class Inventory extends AppCompatActivity {
     private InventoryAdapter inventoryAdapter;
     private List<InventoryItem> inventoryList;
     private List<InventoryItem> allItemsList;  // List to store all items for resetting search
+    private boolean lowQuantityFound; // Flag to track low quantity items
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,36 +114,40 @@ public class Inventory extends AppCompatActivity {
     }
 
     private void fetchInventoryByUserName(String username) {
-        String trackingId = "T1234"; // Hard-coded tracking ID
+        // Fetch the tracking IDs for the specified user
+        CollectionReference trackingIdRef = db.collection("users").document(username).collection("inventory");
 
-        // Construct path to the inventory
+        trackingIdRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                for (QueryDocumentSnapshot trackingIdDocument : task.getResult()) {
+                    String trackingId = trackingIdDocument.getId(); // Get the tracking ID
+                    fetchItemsByTrackingId(username, trackingId); // Fetch items for the tracking ID
+                }
+            } else {
+                Log.e(TAG, "Error fetching tracking IDs", task.getException());
+                Toast.makeText(Inventory.this, "Error fetching tracking IDs", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void fetchItemsByTrackingId(String username, String trackingId) {
+        // Construct path to the items using the dynamic tracking ID
         CollectionReference itemsRef = db.collection("users").document(username)
                 .collection("inventory").document(trackingId).collection("items");
 
         itemsRef.get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                allItemsList.clear();
-                inventoryList.clear();
-                boolean lowQuantityFound = false; // Flag to track low quantity items
+                // Instead of clearing the lists, just add items to them
                 for (QueryDocumentSnapshot document : task.getResult()) {
                     InventoryItem item = document.toObject(InventoryItem.class);
                     allItemsList.add(item);
                     inventoryList.add(item);
                     Log.d(TAG, "Fetched Item: " + item.getProductName() + ", Quantity: " + item.getQuantity());
 
-                    // Convert the quantity to an integer
-                    try {
-                        int quantity = Integer.parseInt(item.getQuantity()); // Assuming item.getQuantity() returns a String
-                        // Check if the quantity is less than 5
-                        if (quantity < 5) {
-                            lowQuantityFound = true;
-                        }
-                    } catch (NumberFormatException e) {
-                        Log.e(TAG, "Error parsing quantity for item: " + item.getProductName(), e);
-                        Toast.makeText(Inventory.this, "Invalid quantity for item: " + item.getProductName(), Toast.LENGTH_SHORT).show();
-                    }
+                    // Check for low quantity
+                    checkLowQuantity(item);
                 }
-                inventoryAdapter.notifyDataSetChanged(); // Refresh RecyclerView
+                inventoryAdapter.notifyDataSetChanged(); // Refresh RecyclerView after all items are added
 
                 // Show notification if low quantity found
                 if (lowQuantityFound) {
@@ -155,6 +160,20 @@ public class Inventory extends AppCompatActivity {
         });
     }
 
+    private void checkLowQuantity(InventoryItem item) {
+        try {
+            String quantityStr = item.getQuantity();
+            String[] parts = quantityStr.split("\\(");
+            int quantity = Integer.parseInt(parts[0].trim());
+
+            if (quantity < 5) {
+                lowQuantityFound = true;
+            }
+        } catch (NumberFormatException e) {
+            Log.e(TAG, "Error parsing quantity for item: " + item.getProductName(), e);
+            Toast.makeText(Inventory.this, "Invalid quantity for item: " + item.getProductName(), Toast.LENGTH_SHORT).show();
+        }
+    }
 
     private void filterItems(String query) {
         inventoryList.clear();
@@ -174,5 +193,4 @@ public class Inventory extends AppCompatActivity {
         }
         inventoryAdapter.notifyDataSetChanged();  // Refresh RecyclerView
     }
-
 }
