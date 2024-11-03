@@ -47,8 +47,11 @@ public class PaymentPageActivity extends AppCompatActivity {
         // Add Pay Now button click listener
         Button payNowButton = findViewById(R.id.payButton);
         payNowButton.setOnClickListener(v -> {
+            // Log the total amount before sending it to CardPaymentActivity
+            Log.d("PaymentPageActivity", "Total amount to send: $" + totalAmount);
+
             Intent intent = new Intent(PaymentPageActivity.this, CardPaymentActivity.class);
-            intent.putExtra("TOTAL_AMOUNT", totalAmount); // Pass the total amount to CardPaymentActivity
+            intent.putExtra("paymentAmount", totalAmount); // Pass the total amount to CardPaymentActivity
             startActivity(intent);
         });
     }
