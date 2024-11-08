@@ -24,6 +24,12 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
         this.loggedInUser = loggedInUser;
     }
 
+    // Method to update the message list and refresh the RecyclerView
+    public void updateMessages(List<ChatMessage> newMessageList) {
+        this.messageList = newMessageList;
+        notifyDataSetChanged(); // Refresh the RecyclerView with the new data
+    }
+
     @Override
     public int getItemViewType(int position) {
         ChatMessage message = messageList.get(position);
@@ -54,6 +60,11 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
         // Format the timestamp
         String formattedTime = DateFormat.format("hh:mm a", message.getTimestamp()).toString();
         holder.timestampTextView.setText(formattedTime); // Set the formatted timestamp
+
+        // Optionally, you can also mark the message as read here if necessary
+        if (!message.isRead()) {
+            // You can call a method to mark the message as read here if needed
+        }
     }
 
     @Override
