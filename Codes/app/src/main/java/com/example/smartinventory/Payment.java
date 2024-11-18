@@ -3,10 +3,22 @@ package com.example.smartinventory;
 public class Payment {
     private String username;
     private String trackingId;
+    private String last4Digits; // Last 4 digits of the card number
     private double amount;
-    private String date; // Check-in date
+    private String date; // Payment date/time
     private int numberOfDays; // Number of days for storage
 
+    public Payment() {
+    }
+    // Constructor
+    public Payment(String username, String trackingId, String last4Digits, double amount, String date, int numberOfDays) {
+        this.username = username;
+        this.trackingId = trackingId;
+        this.last4Digits = last4Digits; // Store the last 4 digits
+        this.amount = amount;
+        this.date = date;
+        this.numberOfDays = numberOfDays;
+    }
     public Payment(String username, String trackingId, double amount, String date, int numberOfDays) {
         this.username = username;
         this.trackingId = trackingId;
@@ -15,6 +27,7 @@ public class Payment {
         this.numberOfDays = numberOfDays;
     }
 
+    // Getters and Setters
     public String getUsername() {
         return username;
     }
@@ -29,6 +42,14 @@ public class Payment {
 
     public void setTrackingId(String trackingId) {
         this.trackingId = trackingId;
+    }
+
+    public String getLast4Digits() {
+        return last4Digits;
+    }
+
+    public void setLast4Digits(String last4Digits) {
+        this.last4Digits = last4Digits;
     }
 
     public double getAmount() {
@@ -55,4 +76,3 @@ public class Payment {
         this.numberOfDays = numberOfDays;
     }
 }
-
