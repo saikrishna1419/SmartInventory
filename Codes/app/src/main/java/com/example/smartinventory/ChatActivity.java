@@ -481,6 +481,7 @@ public class ChatActivity extends AppCompatActivity {
         fetchMessages();
     }
 
+    /*
     @Override
     public void onBackPressed() {
 
@@ -491,7 +492,7 @@ public class ChatActivity extends AppCompatActivity {
             super.onBackPressed();
 
     }
-
+*/
 
 
     private boolean isCurrentUserInChatActivity() {
