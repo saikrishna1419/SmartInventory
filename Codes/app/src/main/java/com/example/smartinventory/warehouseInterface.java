@@ -17,6 +17,7 @@ public class warehouseInterface extends AppCompatActivity {
         TextView checkInTV = findViewById(R.id.checkInTV);
         TextView liveChatTV = findViewById(R.id.livechatTV);
         TextView requestTV = findViewById(R.id.requestTV);
+        TextView InventoryTV = findViewById(R.id.InventoryTV);
 
         requestTV.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -37,8 +38,16 @@ public class warehouseInterface extends AppCompatActivity {
         liveChatTV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(warehouseInterface.this, ChatActivity.class);
-                intent.putExtra("role", "manager");
+                Intent intent = new Intent(warehouseInterface.this, UserListActivity.class);
+                intent.putExtra("role", "manager"); // Pass manager role
+                startActivity(intent);
+            }
+        });
+
+        InventoryTV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(warehouseInterface.this, UsernameListActivity.class);
                 startActivity(intent);
             }
         });

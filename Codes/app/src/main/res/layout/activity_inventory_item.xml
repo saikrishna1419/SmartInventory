@@ -27,13 +27,14 @@
 
     <TextView
         android:id="@+id/upcTV"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="70dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="88dp"
         android:text="UPC"
         android:textSize="16sp"
-        android:visibility="gone"
+        android:visibility="visible"
         app:layout_constraintStart_toEndOf="@id/quantityTV"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/requestButton"

@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@firebase/messaging": "^0.12.11",
+    "firebase": "^10.14.0"
+  }
+}

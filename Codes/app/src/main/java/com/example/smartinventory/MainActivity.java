@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log; // Added for logging
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -21,6 +22,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -53,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
 
                 // Check if email and password are not empty
                 if (email.isEmpty() || password.isEmpty()) {
-                    // Show a toast message to the user indicating that they need to enter both email and password
                     Toast.makeText(MainActivity.this, "Please enter both email and password.", Toast.LENGTH_SHORT).show();
                     return; // Exit the method early to prevent further execution
                 }
@@ -67,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
         forgotPasswordTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Navigate to the forgot password page
                 Intent intent = new Intent(MainActivity.this, ResetPasswordActivity.class);
                 startActivity(intent);
             }
@@ -77,7 +77,6 @@ public class MainActivity extends AppCompatActivity {
         newUserTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Navigate to the registration page
                 Intent intent = new Intent(MainActivity.this, Register.class);
                 startActivity(intent);
             }
@@ -90,7 +89,6 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
                             FirebaseUser user = mAuth.getCurrentUser();
                             if (user != null) {
                                 if (user.isEmailVerified()) {
@@ -102,7 +100,6 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             }
                         } else {
-                            // If sign in fails, display a message to the user.
                             Toast.makeText(MainActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -115,6 +112,10 @@ public class MainActivity extends AppCompatActivity {
         DocumentReference customerDocRef = db.collection("customers").document(userId);
         DocumentReference managerDocRef = db.collection("managers").document(userId);
 
+        // Log the document paths being checked
+        Log.d("MainActivity", "Checking customer document: " + customerDocRef.getPath());
+        Log.d("MainActivity", "Checking manager document: " + managerDocRef.getPath());
+
         // First, check the customers collection
         customerDocRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
@@ -123,6 +124,9 @@ public class MainActivity extends AppCompatActivity {
                     String userType = documentSnapshot.getString("userType");
                     if (userType != null) {
                         navigateToUserInterface(userType);
+                        navigateToChatActivity(userType);
+                        // Save FCM token to Firestore
+                        saveFcmTokenToFirestore(userId, "customers"); // Pass "customers" to indicate user type
                     } else {
                         Toast.makeText(MainActivity.this, "User type not found.", Toast.LENGTH_SHORT).show();
                     }
@@ -135,6 +139,8 @@ public class MainActivity extends AppCompatActivity {
                                 String userType = documentSnapshot.getString("userType");
                                 if (userType != null) {
                                     navigateToUserInterface(userType);
+                                    // Save FCM token to Firestore
+                                    saveFcmTokenToFirestore(userId, "managers"); // Pass "managers" to indicate user type
                                 } else {
                                     Toast.makeText(MainActivity.this, "User type not found.", Toast.LENGTH_SHORT).show();
                                 }
@@ -158,6 +164,30 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void saveFcmTokenToFirestore(String userId, String userType) {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (task.isSuccessful()) {
+                            String token = task.getResult();
+                            FirebaseFirestore db = FirebaseFirestore.getInstance();
+                            db.collection(userType) // Use user type to determine collection
+                                    .document(userId) // Use userId as document ID
+                                    .update("fcmToken", token)
+                                    .addOnSuccessListener(aVoid -> {
+                                        Toast.makeText(MainActivity.this, "FCM Token saved successfully!", Toast.LENGTH_SHORT).show();
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Toast.makeText(MainActivity.this, "Failed to save FCM token: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    });
+                        } else {
+                            Toast.makeText(MainActivity.this, "Failed to get FCM token: " + task.getException(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+    }
+
     // Method to navigate to appropriate interface based on user type
     private void navigateToUserInterface(String userType) {
         if (userType.equals("Customer")) {
@@ -169,5 +199,11 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Toast.makeText(MainActivity.this, "Unknown user type.", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void navigateToChatActivity(String userType) {
+        Intent chatIntent = new Intent(MainActivity.this, ChatActivity.class);
+        chatIntent.putExtra("userType", userType);
+        startActivity(chatIntent);
     }
 }

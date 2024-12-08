@@ -20,6 +20,8 @@ public class UserInterface extends AppCompatActivity {
 
         TextView inventoryTV = findViewById(R.id.InventoryTV);
         TextView liveChatTV = findViewById(R.id.livechatTV);
+        TextView trackingTV = findViewById(R.id.TrackingTV);
+        TextView paymentTV = findViewById(R.id.paymentTV);
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -38,10 +40,28 @@ public class UserInterface extends AppCompatActivity {
         liveChatTV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(UserInterface.this, ChatActivity.class);
-                intent.putExtra("role", "user");
+                Intent intent = new Intent(UserInterface.this, UserListActivity.class);
+                intent.putExtra("role", "customer"); // Pass customer role
+                startActivity(intent);
+            }
+        });
+
+        trackingTV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(UserInterface.this, TrackingActivity.class);
+                startActivity(intent);
+            }
+        });
+
+
+        paymentTV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(UserInterface.this, PaymentOptionsActivity.class);
                 startActivity(intent);
             }
         });
     }
+
 }

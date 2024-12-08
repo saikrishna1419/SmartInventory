@@ -123,10 +123,10 @@ public class checkIn extends AppCompatActivity {
 
                     fetchAndLogData(username, trackingId);
                     // Start WarehouseInventoryActivity to refresh data
-                    //Intent intent = new Intent(checkIn.this, WarehouseInventoryActivity.class);
-                    //intent.putExtra("refresh", true); // Flag to indicate data refresh
-                    //startActivity(intent);
-                    //finish(); // Optional: finish the current activity
+                    Intent intent = new Intent(checkIn.this, warehouseInterface.class);
+                    intent.putExtra("refresh", true); // Flag to indicate data refresh
+                    startActivity(intent);
+                    finish(); // Optional: finish the current activity
                 })
                 .addOnFailureListener(e -> Toast.makeText(checkIn.this, "Error saving data", Toast.LENGTH_SHORT).show());
     }

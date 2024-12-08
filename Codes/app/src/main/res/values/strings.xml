@@ -5,10 +5,12 @@
         <item>Customer</item>
     </string-array>
 
-    <string-array name="request_status">
+    <string-array name="request_status_array">
         <item>New</item>
         <item>Processing</item>
         <item>Shipped</item>
         <item>Cancelled</item>
     </string-array>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

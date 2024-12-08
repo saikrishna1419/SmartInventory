@@ -44,25 +44,52 @@ public class ResetPasswordActivity extends AppCompatActivity {
         }
 
         db.collection("customers")
-                .whereEqualTo("userName", email)
                 .get()
                 .addOnCompleteListener(task -> {
-                    if (task.isSuccessful() && !task.getResult().isEmpty()) {
-                        sendPasswordResetEmail(email);
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        boolean emailFound = false;
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            String documentEmail = document.getString("email");
+                            if (email.equals(documentEmail)) {
+                                emailFound = true;
+                                sendPasswordResetEmail(email);
+                                break;
+                            }
+                        }
+
+                        if (!emailFound) {
+                            checkManagersForEmail(email); // Check managers collection if email not found in customers
+                        }
                     } else {
-                        db.collection("managers")
-                                .whereEqualTo("userName", email)
-                                .get()
-                                .addOnCompleteListener(task2 -> {
-                                    if (task2.isSuccessful() && !task2.getResult().isEmpty()) {
-                                        sendPasswordResetEmail(email);
-                                    } else {
-                                        Toast.makeText(getApplicationContext(), "Email not found.", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
+                        Toast.makeText(getApplicationContext(), "Error accessing customers collection.", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
+
+    private void checkManagersForEmail(String email) {
+        db.collection("managers")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        boolean emailFound = false;
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            String documentEmail = document.getString("email");
+                            if (email.equals(documentEmail)) {
+                                emailFound = true;
+                                sendPasswordResetEmail(email);
+                                break;
+                            }
+                        }
+
+                        if (!emailFound) {
+                            Toast.makeText(getApplicationContext(), "Email not found.", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Error accessing managers collection.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
 
     private void sendPasswordResetEmail(String email) {
         mAuth.sendPasswordResetEmail(email)

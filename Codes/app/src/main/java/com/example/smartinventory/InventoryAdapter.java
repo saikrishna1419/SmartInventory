@@ -2,22 +2,6 @@ package com.example.smartinventory;
 
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-
-import java.util.List;
-// InventoryAdapter.java
-
-import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,15 +35,24 @@ public class InventoryAdapter extends RecyclerView.Adapter<InventoryAdapter.Inve
         InventoryItem item = inventoryList.get(position);
         holder.productNameTV.setText(item.getProductName());
         holder.quantityTV.setText(String.valueOf(item.getQuantity()));
+        holder.upcTV.setText(item.getUpc());
 
-        // Hide UPC TextView
-        holder.upcTV.setVisibility(View.GONE);
+        // Set click listener for the entire item view
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, DeductionDetails.class);
+            intent.putExtra("productName", item.getProductName());
+            intent.putExtra("deductedAmount", item.getQuantity()); // Assuming quantity is the deducted amount
+            intent.putExtra("timestamp", item.getDate()); // Assuming date is the timestamp
+            context.startActivity(intent);
+        });
 
+        // Optional: If you want to keep the button functionality as well, you can do that
         holder.requestButton.setOnClickListener(v -> {
+            // You can keep or modify this based on your requirements
             Intent intent = new Intent(context, RequestDetailsActivity.class);
             intent.putExtra("productName", item.getProductName());
             intent.putExtra("quantity", item.getQuantity());
-            intent.putExtra("upc", item.getUpc()); // Pass UPC to RequestDetailsActivity
+            intent.putExtra("upc", item.getUpc());
             context.startActivity(intent);
         });
     }
@@ -72,7 +65,7 @@ public class InventoryAdapter extends RecyclerView.Adapter<InventoryAdapter.Inve
     public static class InventoryViewHolder extends RecyclerView.ViewHolder {
         TextView productNameTV;
         TextView quantityTV;
-        TextView upcTV; // This will be hidden
+        TextView upcTV;
         Button requestButton;
 
         public InventoryViewHolder(@NonNull View itemView) {

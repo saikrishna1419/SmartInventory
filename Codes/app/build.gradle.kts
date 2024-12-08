@@ -47,7 +47,8 @@ android {
 
 dependencies {
     // Android UI and support libraries
-    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("androidx.activity:activity:1.9.2")
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
@@ -65,8 +66,7 @@ dependencies {
     implementation("com.itextpdf:barcodes:8.0.5") // Replace with the latest version if needed
     implementation("com.itextpdf:html2pdf:5.0.5") // Replace with the latest version if needed
     implementation("com.itextpdf:pdfa:5.5.9")
-    implementation("com.google.firebase:firebase-database:21.0.0") // Replace with the latest version if needed
-
+    implementation("com.google.firebase:firebase-database:21.0.0")
 
     // Testing libraries
     testImplementation("junit:junit:4.13.2")
@@ -88,6 +88,8 @@ dependencies {
 
     //Storage
     implementation("com.google.firebase:firebase-storage:20.1.0")
+
+
 
 
 

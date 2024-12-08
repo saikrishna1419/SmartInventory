@@ -16,7 +16,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Request extends AppCompatActivity {
 
@@ -110,84 +115,209 @@ public class Request extends AppCompatActivity {
 
         updateStatusButton.setOnClickListener(v -> {
             String newStatus = statusSpinner.getSelectedItem().toString();
-            updateRequestStatus(requestId, newStatus, productName, quantity); // Pass productName and quantity for inventory update
+            updateRequestStatus(requestId, newStatus, productName, quantity, username); // Pass productName and quantity for inventory update
         });
 
         container.addView(requestView);
     }
 
-    private void updateRequestStatus(String requestId, String newStatus, String productName, String quantity) {
+    private void updateRequestStatus(String requestId, String newStatus, String productName, String quantityStr, String username) {
+        // Create a map for the status update
+        Map<String, Object> statusUpdate = new HashMap<>();
+        statusUpdate.put("status", newStatus);
+        statusUpdate.put("timestamp", FieldValue.serverTimestamp()); // Use server timestamp for accuracy
+
+        // Update the current status and timestamp
         db.collection("requests").document(requestId)
-                .update("status", newStatus)
+                .update("status", newStatus, "timestamp", FieldValue.serverTimestamp())
                 .addOnSuccessListener(aVoid -> {
+                    // Add the new status to history
+                    addStatusToHistory(requestId, newStatus);
+
+                    // If the status is "Processing", update the inventory
                     if (newStatus.equals("Processing")) {
-                        updateInventory(productName, quantity); // Pass quantity for the update
+                        updateInventory(username, productName, quantityStr); // Pass username from the request
                     }
+
+                    // If the status is changed to "Shipping", add the shipping cost
+                    if (newStatus.equals("Shipped")) {
+                        addShippingCostToUser(requestId, "$15"); // Add shipping cost
+                    }
+
                     Toast.makeText(Request.this, "Status updated successfully", Toast.LENGTH_SHORT).show();
-                    loadAllRequests();  // Reload requests without recreating the activity
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(Request.this, "Failed to update status", Toast.LENGTH_SHORT).show();
-                    Log.e("Request", "Error updating request status: ", e);
+                    Log.e("RequestDetails", "Error updating request status: ", e);
                 });
     }
 
-    private void updateInventory(String productNameFromRequest, String requestQuantity) {
+    private void addShippingCostToUser(String requestId, String shippingCost) {
+        db.collection("requests").document(requestId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        // Get the username from the request document
+                        String username = documentSnapshot.getString("username");
+
+                        // Reference to the user's payments document in Firebase
+                        db.collection("users").document(username).collection("payments")
+                                .document("paymentDetails")
+                                .get()
+                                .addOnSuccessListener(paymentDoc -> {
+                                    if (paymentDoc.exists()) {
+                                        // If the document exists, update the shipping cost
+                                        db.collection("users").document(username).collection("payments")
+                                                .document("checkoutPayment")
+                                                .update("amount", FieldValue.increment(15)) // Add $15 to the shipping cost
+                                                .addOnSuccessListener(aVoid -> Log.d("RequestDetails", "Shipping cost added successfully."))
+                                                .addOnFailureListener(e -> Log.e("RequestDetails", "Error adding shipping cost: ", e));
+                                    } else {
+                                        // If the document doesn't exist, create it and set the initial shipping cost
+                                        Map<String, Object> paymentData = new HashMap<>();
+                                        paymentData.put("amount", 15); // Set the initial shipping cost
+                                        db.collection("users").document(username).collection("payments")
+                                                .document("checkoutPayment")
+                                                .set(paymentData)
+                                                .addOnSuccessListener(aVoid -> Log.d("RequestDetails", "Payment details created with shipping cost."))
+                                                .addOnFailureListener(e -> Log.e("RequestDetails", "Error creating payment details: ", e));
+                                    }
+                                })
+                                .addOnFailureListener(e -> Log.e("RequestDetails", "Error fetching payment details: ", e));
+                    }
+                })
+                .addOnFailureListener(e -> Log.e("RequestDetails", "Error fetching request details: ", e));
+    }
+
+
+    private void addStatusToHistory(String requestId, String newStatus) {
+        // First, set the server timestamp in the document
+        db.collection("requests").document(requestId)
+                .update("timestamp", FieldValue.serverTimestamp())
+                .addOnSuccessListener(aVoid -> {
+                    // After setting the timestamp, retrieve it
+                    db.collection("requests").document(requestId).get()
+                            .addOnSuccessListener(documentSnapshot -> {
+                                if (documentSnapshot.exists()) {
+                                    // Get the updated timestamp
+                                    Object timestamp = documentSnapshot.get("timestamp");
+
+                                    // Create a map for the history entry
+                                    Map<String, Object> historyEntry = new HashMap<>();
+                                    historyEntry.put("status", newStatus);
+                                    historyEntry.put("timestamp", timestamp);
+
+                                    // Add the history entry to the statusHistory field
+                                    db.collection("requests").document(requestId)
+                                            .update("statusHistory", FieldValue.arrayUnion(historyEntry))
+                                            .addOnSuccessListener(aVoid1 -> {
+                                                Log.d("RequestDetails", "Status history updated successfully.");
+                                            })
+                                            .addOnFailureListener(e -> {
+                                                Log.e("RequestDetails", "Error updating status history: ", e);
+                                            });
+                                }
+                            })
+                            .addOnFailureListener(e -> Log.e("RequestDetails", "Error retrieving timestamp: ", e));
+                })
+                .addOnFailureListener(e -> Log.e("RequestDetails", "Error setting server timestamp: ", e));
+    }
+
+    private void updateInventory(String username, String productNameFromRequest, String requestQuantity) {
         Log.d("UpdateInventory", "Request quantity to deduct: " + requestQuantity);
+        Log.d("UpdateInventory", "username: " + username);
 
-        db.collection("users").document("saikrishna11.bathula@gmail.com")
-                .collection("inventory").document("T1234").collection("items")
+        db.collection("users").document(username).collection("inventory")
                 .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    boolean productFound = false;
+                .addOnSuccessListener(querySnapshot -> {
+                    if (querySnapshot.isEmpty()) {
+                        Log.e("UpdateInventory", "No inventory found for user: " + username);
+                        Toast.makeText(Request.this, "No inventory found for the user", Toast.LENGTH_SHORT).show();
+                    } else {
+                        AtomicBoolean productFound = new AtomicBoolean(false);
 
-                    for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots) {
-                        String productNameInInventory = documentSnapshot.getString("productName");
+                        // Loop through all tracking IDs in the inventory collection
+                        for (DocumentSnapshot trackingDoc : querySnapshot) {
+                            String trackingId = trackingDoc.getId(); // Get tracking ID
+                            Log.d("UpdateInventory", "Checking tracking ID: " + trackingId);
 
-                        Log.d("UpdateInventory", "Checking product: " + productNameInInventory);
+                            // For each tracking ID, get the 'items' subcollection
+                            db.collection("users").document(username)
+                                    .collection("inventory").document(trackingId).collection("items")
+                                    .get()
+                                    .addOnSuccessListener(itemSnapshot -> {
+                                        for (DocumentSnapshot itemDoc : itemSnapshot) {
+                                            String productNameInInventory = itemDoc.getString("productName");
 
-                        if (productNameInInventory != null && productNameInInventory.equals(productNameFromRequest)) {
-                            productFound = true;
+                                            Log.d("UpdateInventory", "Checking product: " + productNameInInventory);
 
-                            // Get the current quantity from the inventory
-                            String quantityStr = documentSnapshot.getString("quantity"); // e.g., "100(-50)"
-                            String[] parts = quantityStr.split("\\(");
-                            int currentQuantity = Integer.parseInt(parts[0].trim()); // Extract the total quantity
+                                            if (productNameInInventory != null && productNameInInventory.equals(productNameFromRequest)) {
+                                                productFound.set(true);
 
-                            Log.d("UpdateInventory", "Current quantity in inventory: " + currentQuantity);
+                                                // Get the current quantity from the inventory
+                                                String quantityStr = itemDoc.getString("quantity");
+                                                String[] parts = quantityStr.split("\\(");
+                                                int currentQuantity = Integer.parseInt(parts[0].trim()); // Extract the total quantity
 
-                            int requestQ = Integer.parseInt(requestQuantity);
-                            // Calculate new quantity
-                            int newQuantity = currentQuantity - requestQ; // Deduct based on request quantity
-                            Log.d("UpdateInventory", "New quantity after deduction: " + newQuantity);
+                                                Log.d("UpdateInventory", "Current quantity in inventory: " + currentQuantity);
 
-                            // Prepare updated quantity string in the format "newQuantity(-deductedQuantity)"
-                            String updatedQuantityStr = String.valueOf(newQuantity); // Set deducted quantity to 0
-                            Log.d("UpdateInventory", "Updating inventory with: " + updatedQuantityStr);
+                                                int requestQ = Integer.parseInt(requestQuantity);
+                                                int newQuantity = currentQuantity - requestQ; // Deduct based on request quantity
 
-                            documentSnapshot.getReference().update("quantity", updatedQuantityStr)
-                                    .addOnSuccessListener(aVoid -> {
-                                        Toast.makeText(Request.this, "Inventory updated successfully", Toast.LENGTH_SHORT).show();
-                                        Log.d("UpdateInventory", "Inventory updated successfully");
+                                                Log.d("UpdateInventory", "New quantity after deduction: " + newQuantity);
+
+                                                // Update the quantity field
+                                                String updatedQuantityStr = String.valueOf(newQuantity); // Deduct quantity
+                                                itemDoc.getReference().update("quantity", updatedQuantityStr)
+                                                        .addOnSuccessListener(aVoid -> {
+                                                            Toast.makeText(Request.this, "Inventory updated successfully", Toast.LENGTH_SHORT).show();
+                                                            Log.d("UpdateInventory", "Inventory updated successfully for tracking ID: " + trackingId);
+                                                            // Log the deduction
+                                                            logDeduction(productNameFromRequest, requestQ);
+                                                        })
+                                                        .addOnFailureListener(e -> {
+                                                            Toast.makeText(Request.this, "Failed to update inventory", Toast.LENGTH_SHORT).show();
+                                                            Log.e("UpdateInventory", "Error updating inventory for tracking ID: " + trackingId, e);
+                                                        });
+
+                                                break; // Exit the loop once the product is found and updated
+                                            }
+                                        }
+
+                                        if (!productFound.get()) {
+                                            Log.e("UpdateInventory", "Product not found in inventory for the name: " + productNameFromRequest);
+                                            Toast.makeText(Request.this, "Product not found in inventory", Toast.LENGTH_SHORT).show();
+                                        }
                                     })
                                     .addOnFailureListener(e -> {
-                                        Toast.makeText(Request.this, "Failed to update inventory", Toast.LENGTH_SHORT).show();
-                                        Log.e("UpdateInventory", "Error updating inventory: ", e);
+                                        Log.e("UpdateInventory", "Error fetching items for tracking ID: " + trackingId, e);
+                                        Toast.makeText(Request.this, "Failed to fetch items for tracking ID: " + trackingId, Toast.LENGTH_SHORT).show();
                                     });
-                            break; // Exit loop once the product is found and updated
                         }
-                    }
-
-                    if (!productFound) {
-                        Log.e("UpdateInventory", "Product not found in inventory for the name: " + productNameFromRequest);
-                        Toast.makeText(Request.this, "Product not found in inventory", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e -> {
+                    Log.e("UpdateInventory", "Error fetching inventory for user: " + username, e);
                     Toast.makeText(Request.this, "Failed to fetch inventory", Toast.LENGTH_SHORT).show();
-                    Log.e("UpdateInventory", "Error fetching inventory: ", e);
                 });
     }
+
+    private void logDeduction(String productName, int deductedAmount) {
+        Map<String, Object> deductionData = new HashMap<>();
+        deductionData.put("productName", productName);
+        deductionData.put("deductedAmount", deductedAmount);
+        deductionData.put("timestamp", FieldValue.serverTimestamp()); // Use server timestamp for accuracy
+
+        // Add the deduction to the 'deductions' collection
+        db.collection("deductions")
+                .add(deductionData)
+                .addOnSuccessListener(documentReference -> {
+                    Log.d("LogDeduction", "Deduction logged with ID: " + documentReference.getId());
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("LogDeduction", "Error logging deduction: ", e);
+                });
+    }
+
 
     private void navigateToRequestDetails(String requestId) {
         Intent intent = new Intent(Request.this, RequestDetails.class);

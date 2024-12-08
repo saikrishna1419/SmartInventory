@@ -84,18 +84,6 @@ public class ChatActivity extends AppCompatActivity {
         setContentView(R.layout.activity_chat);
 
 
-            getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
-                @Override
-                public void handleOnBackPressed() {
-                    // Your custom back press logic
-                    markMessagesAsRead("currentUserEmail", "chatPartnerEmail");
-
-                    // Finish the activity after custom handling
-                    finish();
-                }
-            });
-
-
 
     // Create the Notification Channel (for Android O and above)
         createNotificationChannel();
