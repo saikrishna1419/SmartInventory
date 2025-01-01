@@ -14,10 +14,13 @@ The Smart Inventory System is a comprehensive application designed to simplify w
 ---
 
 ## 📄 More Details:
-For a comprehensive description of the project, workflow, and challenges, please refer to the attached documentation.
+For a comprehensive description of the project, workflow, and challenges, click the button below to download the detailed documentation.
 
-### 📥 Download Documentation:
-[Smart Inventory System - Detailed Documentation](https://github.com/saikrishna1419/SmartInventory/blob/main/Project%20Documentation%20(1)%20(4).docx)
+<div align="center">
+  <a href="https://github.com/saikrishna1419/SmartInventory/blob/main/Project%20Documentation%20(1)%20(4).docx" target="_blank" style="text-decoration: none;">
+    <img src="https://img.shields.io/badge/Download-Documentation-blue?style=for-the-badge" alt="Download Documentation">
+  </a>
+</div>
 
 ---
 
